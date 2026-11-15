@@ -1,5 +1,5 @@
 {
-  "$comment": "示范信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。字段说明见 docs/customize.md。",
+  "$comment": "频道第一轮候选：默认暂停，逐源通过实际试抓后在后台启用。GitHub 仅发现新建仓库，不代表 Release 或模型发布日期。",
   "sources": [
     {
       "id": "rss-openai-news",
@@ -8,7 +8,8 @@
       "config": {
         "feedUrl": "https://openai.com/news/rss.xml",
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
@@ -19,7 +20,8 @@
         "官方"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
       "id": "rss-google-deepmind",
@@ -28,7 +30,8 @@
       "config": {
         "feedUrl": "https://deepmind.google/blog/rss.xml",
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
@@ -39,28 +42,8 @@
         "官方"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-research",
-      "name": "Google Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://research.google/blog/rss/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
       "id": "rss-hugging-face",
@@ -69,7 +52,8 @@
       "config": {
         "feedUrl": "https://huggingface.co/blog/feed.xml",
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
@@ -81,28 +65,8 @@
         "开源"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-microsoft-research",
-      "name": "Microsoft Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.microsoft.com/en-us/research/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "microsoft",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
       "id": "rss-nvidia-blog",
@@ -111,7 +75,8 @@
       "config": {
         "feedUrl": "https://blogs.nvidia.com/feed/",
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
@@ -122,249 +87,230 @@
         "官方"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-aws-ml",
-      "name": "AWS Machine Learning Blog",
-      "kind": "rss",
+      "id": "github-deepseek-ai-new-repos",
+      "name": "DeepSeek · 新建公开仓库",
+      "kind": "json_list",
       "config": {
-        "feedUrl": "https://aws.amazon.com/blogs/machine-learning/feed/",
+        "url": "https://api.github.com/orgs/deepseek-ai/repos?sort=created&direction=desc&per_page=30",
+        "mode": "json_api",
+        "titlePaths": [
+          "name"
+        ],
+        "summaryPaths": [
+          "description"
+        ],
+        "urlTemplate": "{raw:html_url}",
+        "publishedAtPath": "created_at",
+        "externalIdPath": "id",
+        "requireBoolean": {
+          "path": "fork",
+          "equals": false
+        },
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
-      "owner_entity_id": null,
+      "owner_entity_id": "deepseek",
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
         "官方",
-        "教程"
+        "开源"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-github-ai",
-      "name": "GitHub Blog · AI & ML",
-      "kind": "rss",
+      "id": "github-qwenlm-new-repos",
+      "name": "Qwen · 新建公开仓库",
+      "kind": "json_list",
       "config": {
-        "feedUrl": "https://github.blog/ai-and-ml/feed/",
+        "url": "https://api.github.com/orgs/QwenLM/repos?sort=created&direction=desc&per_page=30",
+        "mode": "json_api",
+        "titlePaths": [
+          "name"
+        ],
+        "summaryPaths": [
+          "description"
+        ],
+        "urlTemplate": "{raw:html_url}",
+        "publishedAtPath": "created_at",
+        "externalIdPath": "id",
+        "requireBoolean": {
+          "path": "fork",
+          "equals": false
+        },
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
-      "owner_entity_id": null,
+      "owner_entity_id": "qwen",
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方"
+        "官方",
+        "开源"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-mistral",
-      "name": "Mistral AI",
-      "kind": "rss",
+      "id": "github-moonshotai-new-repos",
+      "name": "Kimi · 新建公开仓库",
+      "kind": "json_list",
       "config": {
-        "feedUrl": "https://mistral.ai/news/rss",
+        "url": "https://api.github.com/orgs/MoonshotAI/repos?sort=created&direction=desc&per_page=30",
+        "mode": "json_api",
+        "titlePaths": [
+          "name"
+        ],
+        "summaryPaths": [
+          "description"
+        ],
+        "urlTemplate": "{raw:html_url}",
+        "publishedAtPath": "created_at",
+        "externalIdPath": "id",
+        "requireBoolean": {
+          "path": "fork",
+          "equals": false
+        },
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
-      "owner_entity_id": null,
+      "owner_entity_id": "kimi",
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "官方"
+        "官方",
+        "开源"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-bair",
-      "name": "Berkeley AI Research",
-      "kind": "rss",
+      "id": "github-zai-org-new-repos",
+      "name": "智谱 GLM · 新建公开仓库",
+      "kind": "json_list",
       "config": {
-        "feedUrl": "https://bair.berkeley.edu/blog/feed.xml",
+        "url": "https://api.github.com/orgs/zai-org/repos?sort=created&direction=desc&per_page=30",
+        "mode": "json_api",
+        "titlePaths": [
+          "name"
+        ],
+        "summaryPaths": [
+          "description"
+        ],
+        "urlTemplate": "{raw:html_url}",
+        "publishedAtPath": "created_at",
+        "externalIdPath": "id",
+        "requireBoolean": {
+          "path": "fork",
+          "equals": false
+        },
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
       "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-the-verge-ai",
-      "name": "The Verge · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-techcrunch-ai",
-      "name": "TechCrunch · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://techcrunch.com/category/artificial-intelligence/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-ars-technica-ai",
-      "name": "Ars Technica · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://arstechnica.com/ai/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-mit-tech-review-ai",
-      "name": "MIT Technology Review · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "owner_entity_id": "zhipu",
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "媒体"
+        "官方",
+        "开源"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-the-decoder",
-      "name": "The Decoder",
-      "kind": "rss",
+      "id": "github-minimax-ai-new-repos",
+      "name": "MiniMax · 新建公开仓库",
+      "kind": "json_list",
       "config": {
-        "feedUrl": "https://the-decoder.com/feed/",
+        "url": "https://api.github.com/orgs/MiniMax-AI/repos?sort=created&direction=desc&per_page=30",
+        "mode": "json_api",
+        "titlePaths": [
+          "name"
+        ],
+        "summaryPaths": [
+          "description"
+        ],
+        "urlTemplate": "{raw:html_url}",
+        "publishedAtPath": "created_at",
+        "externalIdPath": "id",
+        "requireBoolean": {
+          "path": "fork",
+          "equals": false
+        },
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-simon-willison",
-      "name": "Simon Willison",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://simonwillison.net/atom/everything/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "tier": "T1",
+      "owner_entity_id": "minimax",
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "个人"
+        "官方",
+        "开源"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     },
     {
-      "id": "rss-import-ai",
-      "name": "Import AI",
-      "kind": "rss",
+      "id": "github-tencent-hunyuan-new-repos",
+      "name": "腾讯混元 · 新建公开仓库",
+      "kind": "json_list",
       "config": {
-        "feedUrl": "https://importai.substack.com/feed",
+        "url": "https://api.github.com/orgs/Tencent-Hunyuan/repos?sort=created&direction=desc&per_page=30",
+        "mode": "json_api",
+        "titlePaths": [
+          "name"
+        ],
+        "summaryPaths": [
+          "description"
+        ],
+        "urlTemplate": "{raw:html_url}",
+        "publishedAtPath": "created_at",
+        "externalIdPath": "id",
+        "requireBoolean": {
+          "path": "fork",
+          "equals": false
+        },
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3,
+          "initialBackfillMonths": 1
         }
       },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "tier": "T1",
+      "owner_entity_id": "hunyuan",
       "participation_mode": "editorial",
-      "interval_minutes": 180,
+      "interval_minutes": 120,
       "tags": [
-        "个人",
-        "周刊"
+        "官方",
+        "开源"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-latent-space",
-      "name": "Latent Space",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.latent.space/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T2",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "个人"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "enabled": false
     }
   ]
 }
