@@ -22,6 +22,6 @@ let text = readFileSync(".env.example", "utf8");
 for (const [name, value] of Object.entries(values)) {
   text = text.replace(new RegExp(`^${name}=.*$`, "m"), () => `${name}=${value}`);
 }
-text += "\nPORT=127.0.0.1:3080\nCOMPOSE_PROJECT_NAME=china-us-ai-news\nAIHOT_ENVIRONMENT=local\n";
+text += "\nAIHOT_ENVIRONMENT=local\n";
 writeFileSync(".env", text, { flag: "wx", mode: 0o600 });
 console.log("Local .env created; automatic collection and model calls are disabled. No credentials printed.");
