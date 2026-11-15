@@ -12,6 +12,23 @@
 
 ## 运行与检查
 
+### 本机 Windows Docker 代理
+
+- Docker Desktop 的“跟随系统代理”和 `docker info` 中的 `http.docker.internal:3128` 不足以证明构建客户端的认证请求也走了代理。拉取超时时，先核对系统代理和监听端口，再对比直连与显式代理访问 `auth.docker.io`；不要直接认定 Docker Hub 不可用或切换镜像源。
+- 本机已验证的代理是 `http://127.0.0.1:7897`。在执行 Docker pull/build/compose 的同一 PowerShell 进程中显式设置 `$env:HTTP_PROXY` 和 `$env:HTTPS_PROXY`；端口变动时先重新核对。不要写入全局配置或提交代理凭据。
+- 中文项目路径触发 BuildKit session header 非 ASCII 错误时，使用指向本项目的英文 junction：`C:/Users/36322/.codex/workspaces/china-us-ai-news`，同时传入 Compose 的 `--project-directory` 和 `-f`。不要另复制一份项目。
+- 主机构建代理、Docker Desktop 内部代理和容器运行时的出站代理分别验证。不要把主机的 `127.0.0.1` 直接当成容器中的主机地址。
+
+```powershell
+$env:HTTP_PROXY = 'http://127.0.0.1:7897'
+$env:HTTPS_PROXY = 'http://127.0.0.1:7897'
+$project = 'C:/Users/36322/.codex/workspaces/china-us-ai-news'
+docker compose --project-directory $project -f "$project/docker-compose.yml" build
+# 上一条成功后再执行 up -d；失败时保留原始错误并定位所在环节。
+```
+
+### 项目检查
+
 - Node.js 24 直接运行 TypeScript，后端没有构建步骤。npm workspaces：`apps/*`、`packages/*`、`industry`、`site`、`modules/*`。
 - 本机运行和 Docker 见 `docs/deploy.md`。
 - 改完至少跑：

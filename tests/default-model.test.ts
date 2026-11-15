@@ -9,6 +9,9 @@ import { upsertMaterial } from "@aihot/backend/content/materials";
 import { analyzeArticle } from "@aihot/backend/editorial/analyze";
 import { CAPABILITIES, type Capability } from "@aihot/backend/editorial/models";
 import { stopBoss } from "@aihot/backend/jobs/queue";
+import http from "node:http";
+import { z } from "zod";
+import { chatJson } from "@aihot/backend/providers/llm";
 
 // Nothing chosen per step: every capability falls back to the `default` model (a step the site
 // gives a model of its own is sent back to it by its environment variable).
@@ -54,4 +57,37 @@ test("one model runs the prefilter, both scores, the writing and the structure",
   assert.ok(seen.every((r) => r.model === "one-model"), "every request names the configured model");
   const services = await sql<{ service: string }[]>`SELECT DISTINCT service FROM receipts WHERE subject LIKE ${`article:${articleId}%`}`;
   assert.deepEqual(services.map((s) => s.service), ["llm"]);
+});
+
+test("default provider identifies the client and keeps sessions stable per subject without leaking it", async () => {
+  const headers: http.IncomingHttpHeaders[] = [];
+  const server = http.createServer((req, res) => {
+    req.resume();
+    req.on("end", () => {
+      headers.push(req.headers);
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ choices: [{ message: { content: '{"ok":true}' } }] }));
+    });
+  });
+  await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+  const saved = { base: process.env.LLM_BASE_URL, agent: process.env.LLM_USER_AGENT, session: process.env.LLM_SESSION_HEADER };
+  process.env.LLM_BASE_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  process.env.LLM_USER_AGENT = "MyHOT/0.1";
+  process.env.LLM_SESSION_HEADER = "x-opencode-session";
+  try {
+    for (const [i, subject] of [`private-${T}`, `private-${T}`, `other-${T}`].entries()) {
+      await chatJson({ model: "default", purpose: "session_test", subject, promptVersion: String(i), system: "JSON", user: "ok", schema: z.object({ ok: z.boolean() }) });
+    }
+    assert.equal(headers.length, 3);
+    assert.equal(headers[0]!["user-agent"], "MyHOT/0.1");
+    assert.equal(headers[0]!.authorization, "Bearer test-key");
+    assert.match(String(headers[0]!["x-opencode-session"]), /^[a-f0-9]{64}$/);
+    assert.equal(headers[0]!["x-opencode-session"], headers[1]!["x-opencode-session"]);
+    assert.notEqual(headers[0]!["x-opencode-session"], headers[2]!["x-opencode-session"]);
+  } finally {
+    for (const [name, value] of Object.entries({ LLM_BASE_URL: saved.base, LLM_USER_AGENT: saved.agent, LLM_SESSION_HEADER: saved.session })) {
+      if (value === undefined) delete process.env[name]; else process.env[name] = value;
+    }
+    await new Promise<void>(resolve => server.close(() => resolve()));
+  }
 });

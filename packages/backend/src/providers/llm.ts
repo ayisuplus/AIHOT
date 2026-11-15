@@ -115,6 +115,12 @@ function isConnectFailure(error: unknown): boolean {
   return ["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "UND_ERR_CONNECT_TIMEOUT", "CERT_HAS_EXPIRED"].includes(code ?? "");
 }
 
+/** Stable per work item across retries; never sends the raw subject or overrides authentication. */
+function sessionHeaders(name: string, subject: string): Record<string, string> {
+  if (!/^x-[a-z0-9-]+$/i.test(name)) throw new Error("LLM_SESSION_HEADER must be an x- header name");
+  return { [name]: sha256(`${config.siteUrl}:${subject}`) };
+}
+
 function requestFor<S extends z.ZodType>(opts: ChatJsonOptions<S>, spec: ModelSpec) {
   const temperature = opts.temperature ?? 0.2;
   // Never below 512: a smaller cap cut short structured answers down to an empty response (production, 2026-06-19).
@@ -195,7 +201,11 @@ async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit =
       try {
         res = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
           method: "POST",
-          headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+          headers: {
+            "content-type": "application/json", authorization: `Bearer ${apiKey}`,
+            ...(spec.key === "default" && process.env.LLM_USER_AGENT ? { "user-agent": process.env.LLM_USER_AGENT } : {}),
+            ...(spec.key === "default" && process.env.LLM_SESSION_HEADER ? sessionHeaders(process.env.LLM_SESSION_HEADER, opts.subject) : {}),
+          },
           body: JSON.stringify(body),
           signal: AbortSignal.timeout(timeoutMs),
         });
